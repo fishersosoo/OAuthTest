@@ -51,20 +51,22 @@ def update_qq_api_request_data(data={}):
 
 @app.route('/')
 def index():
-    '''just for verify website owner here.'''
+    ''' 用来放主页 '''
     return Markup('''<meta property="qc:admins" '''
                   '''content="226526754150631611006375" />''')
 
 
 @app.route('/user_info')
 def get_user_info():
+    """返回用户信息页面"""
     # if 'github_token' in session:
     #     data = update_qq_api_request_data()
     #     resp = github.get('/user/get_user_info', data=data)
     #     return jsonify(status=resp.status, data=resp.data)
     # return redirect(url_for('login'))
-    if 'user_info' in session:
-        return json.dumps(session['user_info'])
+    # get user info with token
+    user = github.get('https://api.github.com/user', {'access_token': session['github_token']})
+    return json.dumps(user.data)
 
 
 @app.route('/login')
@@ -88,9 +90,7 @@ def authorized():
         )
     session['github_token'] = (resp['access_token'], '')
 
-    # get user info with token
-    user = github.get('https://api.github.com/user', {'access_token': session['github_token']})
-    session['user_info']=user.data
+
     # if isinstance(resp, dict):
     #     session['qq_openid'] = resp.get('openid')
     # return json.dumps(user.data)
@@ -103,4 +103,5 @@ def get_github_oauth_token():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=50000)
+    app.run(host="0.0.0.0",port=50000,ssl_context=("server.crt", "server.key"))
+    #app.run(host="0.0.0.0",port=50000)
